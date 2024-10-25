@@ -4,7 +4,7 @@ from flask import Flask, request
 from flask_httpauth import HTTPBasicAuth
 from flask_restful import reqparse, Api, Resource, abort
 
-from support import load_user_data, init_state_machine, retrieveAllSms, deleteSms, encodeSms, load_missed_calls, save_missed_calls
+from support import incoming_call_callback, load_user_data, init_state_machine, retrieveAllSms, deleteSms, encodeSms, load_missed_calls, save_missed_calls
 from gammu import GSMNetworks
 
 pin = os.getenv('PIN', None)
@@ -162,7 +162,7 @@ api.add_resource(Network, '/network', resource_class_args=[machine])
 api.add_resource(GetSms, '/getsms', resource_class_args=[machine])
 api.add_resource(Reset, '/reset', resource_class_args=[machine])
 api.add_resource(MissedCalls, '/missedCalls')
-
+machine.SetIncomingCall(incoming_call_callback)
 if __name__ == '__main__':
     if ssl:
         app.run(port=port, host="0.0.0.0", ssl_context=('/ssl/cert.pem', '/ssl/key.pem'))

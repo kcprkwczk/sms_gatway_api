@@ -24,8 +24,11 @@ def save_missed_calls(calls, filename='missed_calls.txt'):
         for call in calls:
             missed_calls.write(call + '\n')
 
-
-
+def incoming_call_callback(state_machine, event_type, event_data):
+    if event_type == 'IncomingCall':
+        call_info = f"Incoming call from: {event_data['Number']}, Date/Time: {event_data['DateTime']}\n"
+        with open('missed_calls.txt', 'a') as file:
+            file.write(call_info)
 
 def init_state_machine(pin, filename='gammu.config'):
     sm = gammu.StateMachine()
