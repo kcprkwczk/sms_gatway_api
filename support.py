@@ -88,6 +88,7 @@ def encodeSms(smsinfo):
     return gammu.EncodeSMS(smsinfo)
 
 def incoming_call_callback(state_machine, event_type, event_data):
+    logging.debug("Callback function called")
     logging.debug(f"Event type: {event_type}, Event data: {event_data}")
     if event_type == 'IncomingCall':
         call_info = f"Incoming call from: {event_data['Number']}, Date/Time: {event_data['DateTime']}\n"
