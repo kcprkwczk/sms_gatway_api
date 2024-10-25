@@ -1,28 +1,25 @@
 import os
-
-from flask import Flask, request
+from flask import Flask
 from flask_httpauth import HTTPBasicAuth
 from flask_restful import reqparse, Api, Resource, abort
 
-from support import incoming_call_callback, load_user_data, init_state_machine, retrieveAllSms, deleteSms, encodeSms, load_missed_calls, save_missed_calls
-from gammu import GSMNetworks
+from support import load_user_data, init_state_machine, retrieveAllSms, deleteSms, encodeSms, load_missed_calls, save_missed_calls, incoming_call_callback
 
 pin = os.getenv('PIN', None)
 ssl = os.getenv('SSL', False)
 port = os.getenv('PORT', '5000')
 user_data = load_user_data()
 machine = init_state_machine(pin)
+
 app = Flask(__name__)
 api = Api(app)
 auth = HTTPBasicAuth()
-
 
 @auth.verify_password
 def verify(username, password):
     if not (username and password):
         return False
     return user_data.get(username) == password
-
 
 class Sms(Resource):
     def __init__(self, sm):
@@ -67,14 +64,12 @@ class Sms(Resource):
         result = [machine.SendSMS(message) for message in messages]
         return {"status": 200, "message": str(result)}, 200
 
-
 class Signal(Resource):
     def __init__(self, sm):
         self.machine = sm
 
     def get(self):
         return machine.GetSignalQuality()
-
 
 class Reset(Resource):
     def __init__(self, sm):
@@ -84,7 +79,6 @@ class Reset(Resource):
         machine.Reset(False)
         return {"status": 200, "message": "Reset done"}, 200
 
-
 class Network(Resource):
     def __init__(self, sm):
         self.machine = sm
@@ -93,7 +87,6 @@ class Network(Resource):
         network = machine.GetNetworkInfo()
         network["NetworkName"] = GSMNetworks.get(network["NetworkCode"], 'Unknown')
         return network
-
 
 class GetSms(Resource):
     def __init__(self, sm):
@@ -109,7 +102,6 @@ class GetSms(Resource):
             sms.pop("Locations")
 
         return sms
-
 
 class SmsById(Resource):
     def __init__(self, sm):
@@ -133,7 +125,6 @@ class SmsById(Resource):
         if id < 0 or id >= len(allSms):
             abort(404, message="Sms with id '{}' not found".format(id))
 
-
 class MissedCalls(Resource):
     def __init__(self):
         self.call_list = load_missed_calls()
@@ -154,7 +145,6 @@ class MissedCalls(Resource):
         else:
             abort(404, message="No missed calls to remove")
 
-
 api.add_resource(Sms, '/sms', resource_class_args=[machine])
 api.add_resource(SmsById, '/sms/<int:id>', resource_class_args=[machine])
 api.add_resource(Signal, '/signal', resource_class_args=[machine])
@@ -162,7 +152,7 @@ api.add_resource(Network, '/network', resource_class_args=[machine])
 api.add_resource(GetSms, '/getsms', resource_class_args=[machine])
 api.add_resource(Reset, '/reset', resource_class_args=[machine])
 api.add_resource(MissedCalls, '/missedCalls')
-machine.SetIncomingCall(incoming_call_callback)
+
 if __name__ == '__main__':
     if ssl:
         app.run(port=port, host="0.0.0.0", ssl_context=('/ssl/cert.pem', '/ssl/key.pem'))
