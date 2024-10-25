@@ -154,6 +154,11 @@ api.add_resource(Reset, '/reset', resource_class_args=[machine])
 api.add_resource(MissedCalls, '/missedCalls')
 
 if __name__ == '__main__':
+    # Register the incoming call callback
+    machine.SetIncomingCallback(incoming_call_callback)
+    # Enable listening for incoming calls
+    machine.SetIncomingCall(1)
+
     if ssl:
         app.run(port=port, host="0.0.0.0", ssl_context=('/ssl/cert.pem', '/ssl/key.pem'))
     else:
