@@ -2,14 +2,18 @@ import os
 from flask import Flask
 from flask_httpauth import HTTPBasicAuth
 from flask_restful import reqparse, Api, Resource, abort
+import logging
 
 from support import load_user_data, init_state_machine, retrieveAllSms, deleteSms, encodeSms, load_missed_calls, save_missed_calls, incoming_call_callback
+
+logging.basicConfig(level=logging.DEBUG)
 
 pin = os.getenv('PIN', None)
 ssl = os.getenv('SSL', False)
 port = os.getenv('PORT', '5000')
 user_data = load_user_data()
 machine = init_state_machine(pin)
+logging.debug("State machine initialized")
 
 app = Flask(__name__)
 api = Api(app)
@@ -155,8 +159,10 @@ api.add_resource(MissedCalls, '/missedCalls')
 
 if __name__ == '__main__':
     # Register the incoming call callback
+    logging.debug("Registering incoming call callback")
     machine.SetIncomingCallback(incoming_call_callback)
     # Enable listening for incoming calls
+    logging.debug("Enabling incoming call listening")
     machine.SetIncomingCall(1)
 
     if ssl:
