@@ -3,6 +3,7 @@ import gammu
 import logging
 
 # Configure logging
+logging.basicConfig(level=logging.DEBUG)
 
 def load_user_data(filename='credentials.txt'):
     users = {}
@@ -73,5 +74,3 @@ def deleteSms(machine, sms):
 
 def encodeSms(smsinfo):
     return gammu.EncodeSMS(smsinfo)
-
-
