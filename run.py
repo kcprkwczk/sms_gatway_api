@@ -4,7 +4,7 @@ from flask_httpauth import HTTPBasicAuth
 from flask_restful import reqparse, Api, Resource, abort
 import logging
 
-from support import load_user_data, init_state_machine, retrieveAllSms, deleteSms, encodeSms, load_missed_calls, save_missed_calls, incoming_call_callback
+from support import load_user_data, init_state_machine, retrieveAllSms, deleteSms, encodeSms
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -129,25 +129,6 @@ class SmsById(Resource):
         if id < 0 or id >= len(allSms):
             abort(404, message="Sms with id '{}' not found".format(id))
 
-class MissedCalls(Resource):
-    def __init__(self):
-        self.call_list = load_missed_calls()
-
-    @auth.login_required
-    def get(self):
-        if len(self.call_list) > 0:
-            return {"missedCalls": self.call_list}
-        else:
-            return {"missedCalls": []}
-
-    @auth.login_required
-    def delete(self):
-        if len(self.call_list) > 0:
-            last_call = self.call_list.pop(0)
-            save_missed_calls(self.call_list)
-            return {"message": "Last missed call removed", "call": last_call}, 200
-        else:
-            abort(404, message="No missed calls to remove")
 
 api.add_resource(Sms, '/sms', resource_class_args=[machine])
 api.add_resource(SmsById, '/sms/<int:id>', resource_class_args=[machine])
@@ -155,15 +136,8 @@ api.add_resource(Signal, '/signal', resource_class_args=[machine])
 api.add_resource(Network, '/network', resource_class_args=[machine])
 api.add_resource(GetSms, '/getsms', resource_class_args=[machine])
 api.add_resource(Reset, '/reset', resource_class_args=[machine])
-api.add_resource(MissedCalls, '/missedCalls')
 
 if __name__ == '__main__':
-    # Register the incoming call callback
-    logging.debug("Registering incoming call callback")
-    machine.SetIncomingCallback(incoming_call_callback)
-    # Enable listening for incoming calls
-    logging.debug("Enabling incoming call listening")
-    machine.SetIncomingCall(1)
 
     if ssl:
         app.run(port=port, host="0.0.0.0", ssl_context=('/ssl/cert.pem', '/ssl/key.pem'))

@@ -3,7 +3,6 @@ import gammu
 import logging
 
 # Configure logging
-logging.basicConfig(filename='incoming_call.log', level=logging.DEBUG)
 
 def load_user_data(filename='credentials.txt'):
     users = {}
@@ -12,18 +11,6 @@ def load_user_data(filename='credentials.txt'):
             username, password = line.partition(":")[::2]
             users[username.strip()] = password.strip()
     return users
-
-def load_missed_calls(filename='missed_calls.txt'):
-    calls = []
-    with open(filename) as missed_calls:
-        for line in missed_calls:
-            calls.append(line.strip())
-    return calls
-
-def save_missed_calls(calls, filename='missed_calls.txt'):
-    with open(filename, 'w') as missed_calls:
-        for call in calls:
-            missed_calls.write(call + '\n')
 
 def init_state_machine(pin, filename='gammu.config'):
     sm = gammu.StateMachine()
@@ -87,11 +74,4 @@ def deleteSms(machine, sms):
 def encodeSms(smsinfo):
     return gammu.EncodeSMS(smsinfo)
 
-def incoming_call_callback(state_machine, event_type, event_data):
-    logging.debug("Callback function called")
-    logging.debug(f"Event type: {event_type}, Event data: {event_data}")
-    if event_type == 'IncomingCall':
-        call_info = f"Incoming call from: {event_data['Number']}, Date/Time: {event_data['DateTime']}\n"
-        with open('missed_calls.txt', 'a') as file:
-            file.write(call_info)
-        logging.debug(f"Call info written to file: {call_info}")
+
