@@ -138,6 +138,7 @@ class SmsById(Resource):
 
 # Callback function for incoming calls
 def incoming_call_callback(machine, event_type, data):
+    logging.debug(f'Event type: {event_type}, Data: {data}')  # Log event type and data
     if event_type == 'IncomingCall':
         number = data.get('Number')
         state = data.get('State')
@@ -146,10 +147,10 @@ def incoming_call_callback(machine, event_type, data):
             log_missed_call(number)  # Log missed call
 
 
-# Function to log missed calls
 def log_missed_call(number):
-    with open('missed_calls.log', 'a') as log_file:
-        log_file.write(f'Missed call from: {number}, Time: {datetime.now()}\n')
+    with open("missed_calls.log", "a") as f:
+        f.write(f"Missed call from: {number} at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        logging.info(f"Missed call logged: {number}")
 
 
 # Setting up the incoming call notifications
